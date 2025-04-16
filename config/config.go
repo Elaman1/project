@@ -12,6 +12,13 @@ var StartTime time.Time
 var GlobalCtx context.Context
 var CancelGlobalCtx context.CancelFunc
 
+type Session struct {
+	Name      string    `json:"name"`
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+var Sessions = map[string]Session{}
+
 func InitConfig() {
 	StartTime = time.Now()
 	log.Printf("Конфигурация инициализирована. Время запуска: %v", StartTime)

@@ -82,16 +82,27 @@ func InitRoutes(db *sql.DB) *http.Server {
 		Address: "/ping",
 		Method:  http.MethodGet,
 		Handler: PingFunc,
-		// Пример использования мидлвара
-		//Middlewares: []middlewares.BaseMiddleware{
-		//	&middlewares.Auth{},
-		//},
 	})
 
 	newRoutes.Handle(Route{
 		Address: "/auth/register",
 		Method:  http.MethodPost,
 		Handler: Register,
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/auth/login",
+		Method:  http.MethodPost,
+		Handler: Login,
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/protected",
+		Method:  http.MethodGet,
+		Handler: Protected,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+		},
 	})
 
 	return &http.Server{
