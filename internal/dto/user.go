@@ -9,23 +9,23 @@ type CreateUserRequest struct {
 
 func (req *CreateUserRequest) Validate() error {
 	if req.Username == "" {
-		return errors.New("username is empty")
+		return errors.New("имя пользователя не заполнено")
 	}
 
 	if req.Password == "" {
-		return errors.New("password is empty")
+		return errors.New("пароль не заполнено")
 	}
 
 	if len(req.Password) < 8 {
-		return errors.New("password is too short")
+		return errors.New("пароль слишком короткий")
 	}
 
 	if len(req.Username) > 100 {
-		return errors.New("username is too long")
+		return errors.New("имя пользователя слишком длинное")
 	}
 
-	if len(req.Password) < 2 {
-		return errors.New("password is too short")
+	if len(req.Password) > 500 {
+		return errors.New("пароль слишком длинный")
 	}
 
 	return nil

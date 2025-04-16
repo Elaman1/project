@@ -3,9 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
-	custom_errors "myproject/internal/errors"
 	"myproject/internal/functions"
 	"myproject/internal/middlewares"
 	"net/http"
@@ -23,7 +20,6 @@ type Route struct {
 func (r *Route) GetMiddlewares() []middlewares.BaseMiddleware {
 	r.Middlewares = append(
 		r.Middlewares,
-		&middlewares.RequestMethod{Method: r.Method},
 		&middlewares.Logging{
 			Method:  r.Method,
 			Address: r.Address,
@@ -48,10 +44,10 @@ func (r *Router) Handle(route Route) {
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Method, req.URL.Path)
-outer:
 	for _, route := range r.routes {
-		fmt.Printf("%s %s\n", route.Method, route.Address)
+		if req.Method != route.Method {
+			continue
+		}
 
 		middlewaresList := route.GetMiddlewares()
 		finalHandler := route.Handler
@@ -60,29 +56,19 @@ outer:
 			mw := middlewaresList[i]
 			finalHandler = mw.Handle(finalHandler)
 
-			fmt.Println("middleware: ", mw)
 			if err := mw.Err(); err != nil {
-				var mwErr *custom_errors.MiddlewareNotAllowedError
-				if errors.As(err, &mwErr) {
-					continue outer
-				}
-
-				// Любая другая ошибка
+				w.WriteHeader(http.StatusInternalServerError)
 				http.Error(w, "internal middleware error", http.StatusInternalServerError)
 				return
 			}
 		}
 
-		fmt.Println("route: ", route)
 		// Установка ключей
 		params, ok := matchPattern(route.Address, req.URL.Path)
 		if ok {
 			// Передаём параметры через context
 			ctx := context.WithValue(req.Context(), "params", params)
-
-			fmt.Println("params: ", params)
-			fmt.Println("before end: ")
-			route.Handler(w, req.WithContext(ctx), r.db)
+			finalHandler(w, req.WithContext(ctx), r.db)
 			return
 		}
 	}
@@ -96,14 +82,16 @@ func InitRoutes(db *sql.DB) *http.Server {
 		Address: "/ping",
 		Method:  http.MethodGet,
 		Handler: PingFunc,
-		Middlewares: []middlewares.BaseMiddleware{
-			&middlewares.Auth{},
-		},
+		// Пример использования мидлвара
+		//Middlewares: []middlewares.BaseMiddleware{
+		//	&middlewares.Auth{},
+		//},
 	})
 
 	newRoutes.Handle(Route{
 		Address: "/auth/register",
 		Method:  http.MethodPost,
+		Handler: Register,
 	})
 
 	return &http.Server{

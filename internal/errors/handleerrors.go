@@ -2,7 +2,6 @@ package errors
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -12,18 +11,7 @@ type ErrorResponse struct {
 	Error   string `json:"error"`
 }
 
-const NotAllowed = "Not Allowed"
-
-type MiddlewareNotAllowedError struct {
-	Code    int
-	Message string
-}
-
-func (e MiddlewareNotAllowedError) Error() string {
-	return fmt.Sprintf("Код: %d Ошибка: %s", e.Code, e.Message)
-}
-
-func HandleJsonErrors(w http.ResponseWriter, err error, code int) {
+func HandleJsonErrors(w http.ResponseWriter, err error, code int, op string) {
 	if err == nil {
 		return
 	}
@@ -36,7 +24,7 @@ func HandleJsonErrors(w http.ResponseWriter, err error, code int) {
 		Error:   http.StatusText(code),
 	}
 
-	log.Printf("Ошибка [%d - %s] Текст ошибки: %s", code, http.StatusText(code), err.Error())
+	log.Printf("Ошибка [%d - %s] Текст ошибки: %s в %s", code, http.StatusText(code), err.Error(), op)
 
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
