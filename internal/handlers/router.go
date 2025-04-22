@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"myproject/internal/auth"
 	"myproject/internal/functions"
 	"myproject/internal/middlewares"
 	"net/http"
@@ -45,6 +46,12 @@ func (r *Router) Handle(route Route) {
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, route := range r.routes {
+		// Установка ключей
+		params, ok := matchPattern(route.Address, req.URL.Path)
+		if !ok {
+			continue
+		}
+
 		if req.Method != route.Method {
 			continue
 		}
@@ -63,14 +70,10 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		// Установка ключей
-		params, ok := matchPattern(route.Address, req.URL.Path)
-		if ok {
-			// Передаём параметры через context
-			ctx := context.WithValue(req.Context(), "params", params)
-			finalHandler(w, req.WithContext(ctx), r.db)
-			return
-		}
+		// Передаём параметры через context
+		ctx := context.WithValue(req.Context(), "params", params)
+		finalHandler(w, req.WithContext(ctx), r.db)
+		return
 	}
 	http.NotFound(w, req)
 }
@@ -87,19 +90,19 @@ func InitRoutes(db *sql.DB) *http.Server {
 	newRoutes.Handle(Route{
 		Address: "/auth/register",
 		Method:  http.MethodPost,
-		Handler: Register,
+		Handler: auth.RegisterHandler,
 	})
 
 	newRoutes.Handle(Route{
 		Address: "/auth/login",
 		Method:  http.MethodPost,
-		Handler: Login,
+		Handler: auth.LoginHandler,
 	})
 
 	newRoutes.Handle(Route{
 		Address: "/protected",
 		Method:  http.MethodGet,
-		Handler: Protected,
+		Handler: auth.Protected,
 		Middlewares: []middlewares.BaseMiddleware{
 			&middlewares.Auth{},
 		},

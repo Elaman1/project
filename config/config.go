@@ -17,6 +17,10 @@ type Session struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
+type ctxKey string
+
+const CtxUserKey ctxKey = "user"
+
 var Sessions = map[string]Session{}
 
 func InitConfig() {

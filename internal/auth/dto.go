@@ -1,4 +1,4 @@
-package dto
+package auth
 
 import "errors"
 
@@ -29,4 +29,13 @@ func (req *CreateUserRequest) Validate() error {
 	}
 
 	return nil
+}
+
+type RegisterUserResponse struct {
+	Message string `json:"message"`
+}
+
+type LoginUserResponse struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
 }
