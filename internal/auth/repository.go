@@ -8,29 +8,28 @@ import (
 )
 
 type Repository interface {
-	Save(username, password string) (int64, error)
-	GetUserByName(username string) (models.User, error)
+	Save(reqCtx context.Context, username, password string) (int64, error)
+	GetUserByName(reqCtx context.Context, username string) (models.User, error)
 }
 
 type DbRepository struct {
-	Db     *sql.DB
-	ReqCtx context.Context
+	Db *sql.DB
 }
 
-func (repo *DbRepository) Save(username, password string) (int64, error) {
+func (repo *DbRepository) Save(reqCtx context.Context, username, password string) (int64, error) {
 	var newId int64
 
 	execStr := "insert into users (name, password) values ($1, $2) returning id"
 
-	ctx, cancel := context.WithTimeout(repo.ReqCtx, time.Second*2)
+	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
 	defer cancel()
 
 	execErr := repo.Db.QueryRowContext(ctx, execStr, username, password).Scan(&newId)
 	return newId, execErr
 }
 
-func (repo *DbRepository) GetUserByName(username string) (models.User, error) {
-	ctx, cancel := context.WithTimeout(repo.ReqCtx, time.Second*2)
+func (repo *DbRepository) GetUserByName(reqCtx context.Context, username string) (models.User, error) {
+	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
 	defer cancel()
 
 	var selectedUser models.User

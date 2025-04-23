@@ -20,13 +20,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxAp
 	}
 
 	service := Service{
-		Rep: &DbRepository{
-			Db:     ctxApp.Db,
-			ReqCtx: r.Context(),
+		Repo: &DbRepository{
+			Db: ctxApp.Db,
 		},
 	}
 
-	execErr := service.Registration(user.Username, user.Password)
+	execErr := service.Registration(r.Context(), user.Username, user.Password)
 	if execErr != nil {
 		customerrors.HandleJsonErrors(w, execErr, http.StatusBadRequest, op)
 		return
@@ -55,13 +54,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 	}
 
 	service := Service{
-		Rep: &DbRepository{
-			Db:     ctxApp.Db,
-			ReqCtx: r.Context(),
+		Repo: &DbRepository{
+			Db: ctxApp.Db,
 		},
 	}
 
-	err = service.Login(user.Username, user.Password)
+	err = service.Login(r.Context(), user.Username, user.Password)
 	if err != nil {
 		customerrors.HandleJsonErrors(w, err, http.StatusBadRequest, op)
 		return
