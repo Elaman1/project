@@ -13,10 +13,10 @@ import (
 )
 
 type Route struct {
-	Address     string                       // Алрес роута
-	Method      string                       // Метод роута
-	Handler     functions.CustomHttpHandler  // Это чтобы сохранял метод функции
-	Middlewares []middlewares.BaseMiddleware // Список мидлваров для роута
+	Address     string
+	Method      string
+	Handler     functions.CustomHttpHandler
+	Middlewares []middlewares.BaseMiddleware
 }
 
 func (r *Route) GetMiddlewares() []middlewares.BaseMiddleware {

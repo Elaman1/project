@@ -11,10 +11,6 @@ type Service struct {
 	Repo Repository
 }
 
-func (s *Service) IsRouteService() {
-	// Затычка для определения структуры
-}
-
 func (s *Service) Registration(ctx context.Context, username, password string) error {
 	hashedPassword, err := passwordhasher.HashPassword(password)
 	if err != nil {
