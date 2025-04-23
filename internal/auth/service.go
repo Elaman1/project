@@ -30,6 +30,9 @@ func (s *Service) Registration(username, password string) error {
 
 func (s *Service) Login(username, password string) error {
 	selectedUser, err := s.Rep.GetUserByName(username)
+	if err != nil {
+		return err
+	}
 
 	checkPassword, err := passwordhasher.CheckPassword(password, selectedUser.Password)
 	if err != nil {
@@ -37,7 +40,7 @@ func (s *Service) Login(username, password string) error {
 	}
 
 	if !checkPassword {
-		return errors.New("пароль или логин непавильный")
+		return errors.New("неверный логин или пароль")
 	}
 
 	return nil
