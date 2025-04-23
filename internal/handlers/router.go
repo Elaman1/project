@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"myproject/config"
 	"myproject/internal/auth"
 	"myproject/internal/functions"
 	"myproject/internal/middlewares"
@@ -72,7 +73,9 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		// Передаём параметры через context
 		ctx := context.WithValue(req.Context(), "params", params)
-		finalHandler(w, req.WithContext(ctx), r.db)
+		finalHandler(w, req.WithContext(ctx), config.CtxApp{
+			Db: r.db,
+		})
 		return
 	}
 	http.NotFound(w, req)

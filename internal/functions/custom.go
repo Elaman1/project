@@ -1,8 +1,8 @@
 package functions
 
 import (
-	"database/sql"
+	"myproject/config"
 	"net/http"
 )
 
-type CustomHttpHandler func(http.ResponseWriter, *http.Request, *sql.DB)
+type CustomHttpHandler func(http.ResponseWriter, *http.Request, config.CtxApp)

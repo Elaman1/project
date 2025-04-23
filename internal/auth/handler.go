@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,7 +10,7 @@ import (
 	"time"
 )
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 	const op = "register function"
 
 	user, err := validateUserRequest(w, r, op)
@@ -22,7 +21,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	service := Service{
 		Rep: &DbRepository{
-			Db:     db,
+			Db:     ctxApp.Db,
 			ReqCtx: r.Context(),
 		},
 	}
@@ -46,7 +45,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 	const op = "login function"
 
 	user, err := validateUserRequest(w, r, op)
@@ -57,7 +56,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	service := Service{
 		Rep: &DbRepository{
-			Db:     db,
+			Db:     ctxApp.Db,
 			ReqCtx: r.Context(),
 		},
 	}
@@ -99,7 +98,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("Пользователь Авторизован: ", user.Username)
 }
 
-func Protected(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func Protected(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 	const op = "protected function"
 
 	fmt.Println(r.Context().Value(config.CtxUserKey))

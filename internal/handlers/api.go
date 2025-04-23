@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
+	"myproject/config"
 	customerrors "myproject/internal/errors"
 	"net/http"
 )
 
-func PingFunc(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func PingFunc(w http.ResponseWriter, r *http.Request, app config.CtxApp) {
 	const op = "ping func"
 
 	w.Header().Set("Content-Type", "application/json")

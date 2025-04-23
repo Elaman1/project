@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 	"time"
@@ -49,4 +50,8 @@ func Load() *Config {
 		DBPass: os.Getenv("DB_PASS"),
 		DBName: os.Getenv("DB_NAME"),
 	}
+}
+
+type CtxApp struct {
+	Db *sql.DB
 }
