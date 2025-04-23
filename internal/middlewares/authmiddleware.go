@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"myproject/config"
@@ -17,7 +16,7 @@ type Auth struct {
 
 func (a *Auth) Handle(next functions.CustomHttpHandler) functions.CustomHttpHandler {
 	const op = "middleware auth"
-	return func(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	return func(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 		sessionId, err := r.Cookie("sessionId")
 		if err != nil {
 			customerrors.HandleJsonErrors(w, errors.New("unauthorized"), http.StatusUnauthorized, op)
@@ -39,7 +38,7 @@ func (a *Auth) Handle(next functions.CustomHttpHandler) functions.CustomHttpHand
 
 		ctx := context.WithValue(r.Context(), config.CtxUserKey, session.Name)
 		fmt.Println("Найден пользователь: ", sessionId.Value)
-		next(w, r.WithContext(ctx), db)
+		next(w, r.WithContext(ctx), ctxApp)
 	}
 }
 

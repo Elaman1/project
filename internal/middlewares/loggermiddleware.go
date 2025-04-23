@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"database/sql"
 	"log"
+	"myproject/config"
 	"myproject/internal/functions"
 	"net/http"
 )
@@ -13,10 +13,10 @@ type Logging struct {
 }
 
 func (logging *Logging) Handle(next functions.CustomHttpHandler) functions.CustomHttpHandler {
-	return func(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	return func(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 		log.Printf("Method: %s, Address: %s \n", logging.Method, logging.Address)
 
-		next(w, r, db)
+		next(w, r, ctxApp)
 	}
 }
 
