@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"myproject/internal/lib"
+	"myproject/internal/models"
 	"myproject/pkg/passwordhasher"
 )
 
@@ -25,20 +26,20 @@ func (s *Service) Registration(ctx context.Context, username, password string) e
 	return nil
 }
 
-func (s *Service) Login(ctx context.Context, username, password string) error {
+func (s *Service) Login(ctx context.Context, username, password string) (models.User, error) {
 	selectedUser, err := s.Repo.GetUserByName(ctx, username)
 	if err != nil {
-		return err
+		return selectedUser, err
 	}
 
 	checkPassword, err := passwordhasher.CheckPassword(password, selectedUser.Password)
 	if err != nil {
-		return err
+		return selectedUser, err
 	}
 
 	if !checkPassword {
-		return errors.New("неверный логин или пароль")
+		return selectedUser, errors.New("неверный логин или пароль")
 	}
 
-	return nil
+	return selectedUser, nil
 }

@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	Save(reqCtx context.Context, username, password string) (int64, error)
 	GetUserByName(reqCtx context.Context, username string) (models.User, error)
+	GetUserById(reqCtx context.Context, userId int64) (models.User, error)
 }
 
 type DbRepository struct {
@@ -34,9 +35,53 @@ func (repo *DbRepository) GetUserByName(reqCtx context.Context, username string)
 
 	var selectedUser models.User
 
-	sqlStr := "select id, name, password, created_at from users where name = $1"
+	sqlStr := `select u.id, u.name, u.password, u.created_at, 
+       			r.id, r.code, r.name, r.created_at
+			from users u
+			left join roles r on u.role_id = r.id
+			where u.name = $1`
 
-	err := repo.Db.QueryRowContext(ctx, sqlStr, username).Scan(&selectedUser.Id, &selectedUser.Name, &selectedUser.Password, &selectedUser.CreatedAt)
+	err := repo.Db.QueryRowContext(ctx, sqlStr, username).Scan(
+		&selectedUser.Id,
+		&selectedUser.Name,
+		&selectedUser.Password,
+		&selectedUser.CreatedAt,
+		&selectedUser.Role.Id,
+		&selectedUser.Role.Code,
+		&selectedUser.Role.Name,
+		&selectedUser.Role.CreatedAt,
+	)
+
+	if err != nil {
+		return selectedUser, err
+	}
+
+	return selectedUser, nil
+}
+
+func (repo *DbRepository) GetUserById(reqCtx context.Context, userId int64) (models.User, error) {
+	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
+	defer cancel()
+
+	var selectedUser models.User
+
+	sqlStr := `select u.id, u.name, u.password, u.created_at, 
+       			r.id, r.code, r.name, r.created_at
+			from users u
+			left join roles r on u.role_id = r.id
+			where u.id = $1`
+
+	err := repo.Db.QueryRowContext(ctx, sqlStr, userId).Scan(
+		&selectedUser.Id,
+		&selectedUser.Name,
+		&selectedUser.Password,
+		&selectedUser.CreatedAt,
+		&selectedUser.Role.Id,
+		&selectedUser.Role.Code,
+		&selectedUser.Role.Name,
+		&selectedUser.Role.CreatedAt,
+	)
+
 	if err != nil {
 		return selectedUser, err
 	}

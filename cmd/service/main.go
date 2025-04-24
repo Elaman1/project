@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"myproject/config"
+	"myproject/internal/auth"
 	internalconfig "myproject/internal/config"
 	internaldb "myproject/internal/db"
 	"myproject/internal/handlers"
@@ -31,6 +32,7 @@ func main() {
 		connectConfig.DBPass,
 		connectConfig.DBName,
 	)
+	auth.UserCacheCleaner()
 
 	if err != nil {
 		panic(err)

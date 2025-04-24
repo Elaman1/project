@@ -103,9 +103,9 @@ func InitRoutes(db *sql.DB) *http.Server {
 	})
 
 	newRoutes.Handle(Route{
-		Address: "/protected",
+		Address: "/auth/me",
 		Method:  http.MethodGet,
-		Handler: auth.Protected,
+		Handler: auth.MeHandler,
 		Middlewares: []middlewares.BaseMiddleware{
 			&middlewares.Auth{},
 		},

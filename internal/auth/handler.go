@@ -59,7 +59,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 		},
 	}
 
-	err = service.Login(r.Context(), user.Username, user.Password)
+	selectedUser, err := service.Login(r.Context(), user.Username, user.Password)
 	if err != nil {
 		customerrors.HandleJsonErrors(w, err, http.StatusBadRequest, op)
 		return
@@ -69,10 +69,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 	w.WriteHeader(http.StatusOK)
 
 	sessionId := generateSessionId(user.Username)
+	config.SessionsMu.Lock()
 	config.Sessions[sessionId] = config.Session{
-		Name:      user.Username,
+		UserId:    selectedUser.Id,
 		ExpiresAt: time.Now().Add(time.Hour),
 	}
+	config.SessionsMu.Unlock()
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "sessionId",
@@ -96,10 +98,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 	log.Println("Пользователь Авторизован: ", user.Username)
 }
 
-func Protected(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
-	const op = "protected function"
+func MeHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
+	const op = "me function"
 
-	fmt.Println(r.Context().Value(config.CtxUserKey))
+	user := r.Context().Value(config.CtxUserKey)
+
+	fmt.Println("user: ", user)
 }
 
 func validateUserRequest(w http.ResponseWriter, r *http.Request, op string) (CreateUserRequest, error) {

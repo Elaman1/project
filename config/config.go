@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -14,15 +15,16 @@ var GlobalCtx context.Context
 var CancelGlobalCtx context.CancelFunc
 
 type Session struct {
-	Name      string    `json:"name"`
+	UserId    int64     `json:"user_id"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type ctxKey string
 
-const CtxUserKey ctxKey = "user"
+const CtxUserKey ctxKey = "user_id"
 
 var Sessions = map[string]Session{}
+var SessionsMu sync.RWMutex
 
 func InitConfig() {
 	StartTime = time.Now()

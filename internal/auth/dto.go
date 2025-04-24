@@ -1,6 +1,11 @@
 package auth
 
-import "errors"
+import (
+	"errors"
+	"myproject/internal/models"
+	"sync"
+	"time"
+)
 
 type CreateUserRequest struct {
 	Username string `json:"username"`
@@ -39,3 +44,16 @@ type LoginUserResponse struct {
 	Message string `json:"message"`
 	Token   string `json:"token"`
 }
+
+type CachedUser struct {
+	User      *models.User
+	ExpiresAt time.Time
+}
+
+func (user *CachedUser) Expired() bool {
+	return time.Now().After(user.ExpiresAt)
+}
+
+var UserCaches = make(map[int64]CachedUser)
+
+var UserCachesMu sync.RWMutex

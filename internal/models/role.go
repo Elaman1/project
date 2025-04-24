@@ -2,11 +2,9 @@ package models
 
 import "time"
 
-type User struct {
+type Role struct {
 	Id        int64     `json:"id"`
+	Code      string    `json:"code"`
 	Name      string    `json:"name"`
-	Password  string    `json:"password"`
-	RoleID    int64     `json:"role_id"`
-	Role      Role      `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 }
