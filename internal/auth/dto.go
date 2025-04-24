@@ -2,7 +2,9 @@ package auth
 
 import (
 	"errors"
+	"myproject/config"
 	"myproject/internal/models"
+	"slices"
 	"sync"
 	"time"
 )
@@ -10,6 +12,7 @@ import (
 type CreateUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 func (req *CreateUserRequest) Validate() error {
@@ -31,6 +34,14 @@ func (req *CreateUserRequest) Validate() error {
 
 	if len(req.Password) > 500 {
 		return errors.New("пароль слишком длинный")
+	}
+
+	if req.Role == "" {
+		req.Role = config.User
+	}
+
+	if !slices.Contains(config.AllRoles, req.Role) {
+		return errors.New("неправильно указан роль пользователя")
 	}
 
 	return nil
@@ -55,5 +66,4 @@ func (user *CachedUser) Expired() bool {
 }
 
 var UserCaches = make(map[int64]CachedUser)
-
 var UserCachesMu sync.RWMutex

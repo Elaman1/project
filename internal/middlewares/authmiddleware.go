@@ -46,7 +46,7 @@ func (a *Auth) Handle(next functions.CustomHttpHandler) functions.CustomHttpHand
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), config.CtxUserKey, user)
+		ctx := context.WithValue(r.Context(), config.CtxUserKey, &user)
 		fmt.Println("Найден пользователь: ", sessionId.Value)
 		next(w, r.WithContext(ctx), ctxApp)
 	}
@@ -60,7 +60,6 @@ func (a *Auth) GetUser(ctx context.Context, userId int64, ctxApp config.CtxApp) 
 	auth.UserCachesMu.RLock()
 	cachedUser, ok := auth.UserCaches[userId]
 	auth.UserCachesMu.RUnlock()
-
 	// Если нашлось и не истек возвращаем по кэшу
 	if ok && !cachedUser.Expired() {
 		return *cachedUser.User, nil

@@ -3,12 +3,13 @@ package auth
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"myproject/internal/models"
 	"time"
 )
 
 type Repository interface {
-	Save(reqCtx context.Context, username, password string) (int64, error)
+	Save(reqCtx context.Context, username, password, roleCode string) (int64, error)
 	GetUserByName(reqCtx context.Context, username string) (models.User, error)
 	GetUserById(reqCtx context.Context, userId int64) (models.User, error)
 }
@@ -17,15 +18,26 @@ type DbRepository struct {
 	Db *sql.DB
 }
 
-func (repo *DbRepository) Save(reqCtx context.Context, username, password string) (int64, error) {
+func (repo *DbRepository) Save(reqCtx context.Context, username, password, roleCode string) (int64, error) {
 	var newId int64
 
-	execStr := "insert into users (name, password) values ($1, $2) returning id"
+	// Получаем все роли чтобы определить ИД роли
+	roles, err := repo.getAllRoles(reqCtx)
+	if err != nil {
+		return newId, err
+	}
+
+	role, ok := roles[roleCode]
+	if !ok {
+		return newId, errors.New("role not found")
+	}
+
+	execStr := "insert into users (name, password, role_id) values ($1, $2, $3) returning id"
 
 	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
 	defer cancel()
 
-	execErr := repo.Db.QueryRowContext(ctx, execStr, username, password).Scan(&newId)
+	execErr := repo.Db.QueryRowContext(ctx, execStr, username, password, role.Id).Scan(&newId)
 	return newId, execErr
 }
 
@@ -35,7 +47,7 @@ func (repo *DbRepository) GetUserByName(reqCtx context.Context, username string)
 
 	var selectedUser models.User
 
-	sqlStr := `select u.id, u.name, u.password, u.created_at, 
+	sqlStr := `select u.id, u.name, u.password, u.created_at, u.role_id,
        			r.id, r.code, r.name, r.created_at
 			from users u
 			left join roles r on u.role_id = r.id
@@ -46,6 +58,7 @@ func (repo *DbRepository) GetUserByName(reqCtx context.Context, username string)
 		&selectedUser.Name,
 		&selectedUser.Password,
 		&selectedUser.CreatedAt,
+		&selectedUser.RoleID,
 		&selectedUser.Role.Id,
 		&selectedUser.Role.Code,
 		&selectedUser.Role.Name,
@@ -65,7 +78,7 @@ func (repo *DbRepository) GetUserById(reqCtx context.Context, userId int64) (mod
 
 	var selectedUser models.User
 
-	sqlStr := `select u.id, u.name, u.password, u.created_at, 
+	sqlStr := `select u.id, u.name, u.password, u.created_at, u.role_id,
        			r.id, r.code, r.name, r.created_at
 			from users u
 			left join roles r on u.role_id = r.id
@@ -76,6 +89,7 @@ func (repo *DbRepository) GetUserById(reqCtx context.Context, userId int64) (mod
 		&selectedUser.Name,
 		&selectedUser.Password,
 		&selectedUser.CreatedAt,
+		&selectedUser.RoleID,
 		&selectedUser.Role.Id,
 		&selectedUser.Role.Code,
 		&selectedUser.Role.Name,
@@ -87,4 +101,29 @@ func (repo *DbRepository) GetUserById(reqCtx context.Context, userId int64) (mod
 	}
 
 	return selectedUser, nil
+}
+
+func (repo *DbRepository) getAllRoles(reqCtx context.Context) (map[string]models.Role, error) {
+	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
+	defer cancel()
+
+	var roles = make(map[string]models.Role)
+	sqlStr := `select id, code, name from roles`
+	rows, err := repo.Db.QueryContext(ctx, sqlStr)
+	if err != nil {
+		return roles, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var role models.Role
+		err = rows.Scan(&role.Id, role.Code, &role.Name)
+		if err != nil {
+			return roles, err
+		}
+
+		roles[role.Code] = role
+	}
+
+	return roles, nil
 }

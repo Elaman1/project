@@ -21,7 +21,7 @@ type Session struct {
 
 type ctxKey string
 
-const CtxUserKey ctxKey = "user_id"
+const CtxUserKey ctxKey = "user"
 
 var Sessions = map[string]Session{}
 var SessionsMu sync.RWMutex
@@ -57,3 +57,8 @@ func Load() *Config {
 type CtxApp struct {
 	Db *sql.DB
 }
+
+const Admin = "admin"
+const User = "user"
+
+var AllRoles = []string{Admin, User}

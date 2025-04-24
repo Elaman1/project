@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"myproject/config"
+	"myproject/internal/admin"
 	"myproject/internal/auth"
 	"myproject/internal/functions"
 	"myproject/internal/middlewares"
@@ -108,6 +109,36 @@ func InitRoutes(db *sql.DB) *http.Server {
 		Handler: auth.MeHandler,
 		Middlewares: []middlewares.BaseMiddleware{
 			&middlewares.Auth{},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/auth/me",
+		Method:  http.MethodGet,
+		Handler: auth.MeHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/auth/logout",
+		Method:  http.MethodPost,
+		Handler: auth.LogoutHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/admin/panel",
+		Method:  http.MethodGet,
+		Handler: admin.PanelHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+			&middlewares.RoleMiddleware{
+				RoleName: config.Admin,
+			},
 		},
 	})
 

@@ -12,13 +12,13 @@ type Service struct {
 	Repo Repository
 }
 
-func (s *Service) Registration(ctx context.Context, username, password string) error {
+func (s *Service) Registration(ctx context.Context, username, password, role string) error {
 	hashedPassword, err := passwordhasher.HashPassword(password)
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Repo.Save(ctx, username, hashedPassword)
+	_, err = s.Repo.Save(ctx, username, hashedPassword, role)
 	if lib.IsUniqueViolation(err) {
 		return errors.New("пользователь уже существует")
 	}
