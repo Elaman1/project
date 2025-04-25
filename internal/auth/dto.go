@@ -67,3 +67,11 @@ func (user *CachedUser) Expired() bool {
 
 var UserCaches = make(map[int64]CachedUser)
 var UserCachesMu sync.RWMutex
+
+type RolesCache struct {
+	Roles     []models.Role
+	ExpiresAt time.Time
+}
+
+var RolesCached RolesCache
+var RolesCachesMu sync.RWMutex

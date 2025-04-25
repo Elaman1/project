@@ -3,7 +3,6 @@ package middlewares
 import (
 	"errors"
 	"myproject/config"
-	"myproject/internal/auth"
 	customerrors "myproject/internal/errors"
 	"myproject/internal/functions"
 	"net/http"
@@ -17,7 +16,7 @@ func (role *RoleMiddleware) Handle(next functions.CustomHttpHandler) functions.C
 	const op = "roleMiddleware.Handle"
 
 	return func(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
-		user, ok := auth.GetUserFromContext(r.Context())
+		user, ok := functions.GetUserFromContext(r.Context())
 		if !ok {
 			err := errors.New("пользователь не найден")
 			customerrors.HandleJsonErrors(w, err, http.StatusUnauthorized, op)

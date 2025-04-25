@@ -113,15 +113,6 @@ func InitRoutes(db *sql.DB) *http.Server {
 	})
 
 	newRoutes.Handle(Route{
-		Address: "/auth/me",
-		Method:  http.MethodGet,
-		Handler: auth.MeHandler,
-		Middlewares: []middlewares.BaseMiddleware{
-			&middlewares.Auth{},
-		},
-	})
-
-	newRoutes.Handle(Route{
 		Address: "/auth/logout",
 		Method:  http.MethodPost,
 		Handler: auth.LogoutHandler,

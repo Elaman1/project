@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"fmt"
+	"encoding/json"
 	"myproject/config"
 	"net/http"
 )
@@ -9,5 +9,6 @@ import (
 func PanelHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 	const op = "panelHandler"
 
-	fmt.Println("admin panel")
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "admin panel"})
 }

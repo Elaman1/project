@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"myproject/config"
 	customerrors "myproject/internal/errors"
-	"myproject/internal/models"
+	"myproject/internal/functions"
 	"net/http"
 	"time"
 )
@@ -104,7 +103,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 func MeHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) {
 	const op = "me function"
 
-	user, ok := GetUserFromContext(r.Context())
+	user, ok := functions.GetUserFromContext(r.Context())
 	if !ok {
 		err := errors.New("произошла ошибка")
 		customerrors.HandleJsonErrors(w, err, http.StatusBadRequest, op)
@@ -160,10 +159,4 @@ func validateUserRequest(w http.ResponseWriter, r *http.Request, op string) (Cre
 
 func generateSessionId(login string) string {
 	return fmt.Sprintf("%s-%d", login, time.Now().Unix())
-}
-
-func GetUserFromContext(ctx context.Context) (*models.User, bool) {
-	userVal := ctx.Value(config.CtxUserKey)
-	user, ok := userVal.(*models.User)
-	return user, ok
 }

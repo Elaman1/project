@@ -106,8 +106,15 @@ func (repo *DbRepository) GetUserById(reqCtx context.Context, userId int64) (mod
 func (repo *DbRepository) getAllRoles(reqCtx context.Context) (map[string]models.Role, error) {
 	ctx, cancel := context.WithTimeout(reqCtx, time.Second*2)
 	defer cancel()
-
 	var roles = make(map[string]models.Role)
+
+	RolesCachesMu.Lock()
+	defer RolesCachesMu.Unlock()
+
+	if len(roles) != 0 && RolesCached.ExpiresAt.Before(time.Now()) {
+		return roles, nil
+	}
+
 	sqlStr := `select id, code, name from roles`
 	rows, err := repo.Db.QueryContext(ctx, sqlStr)
 	if err != nil {
@@ -117,12 +124,17 @@ func (repo *DbRepository) getAllRoles(reqCtx context.Context) (map[string]models
 	defer rows.Close()
 	for rows.Next() {
 		var role models.Role
-		err = rows.Scan(&role.Id, role.Code, &role.Name)
+		err = rows.Scan(&role.Id, &role.Code, &role.Name)
 		if err != nil {
 			return roles, err
 		}
 
 		roles[role.Code] = role
+	}
+
+	RolesCached.Roles = make([]models.Role, 0, len(roles))
+	for _, role := range roles {
+		RolesCached.Roles = append(RolesCached.Roles, role)
 	}
 
 	return roles, nil
