@@ -43,3 +43,20 @@ func (s *Service) Login(ctx context.Context, username, password string) (models.
 
 	return selectedUser, nil
 }
+
+func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
+	selectedUsers, err := s.Repo.GetAllUsers(ctx)
+	if err != nil {
+		return selectedUsers, err
+	}
+
+	return selectedUsers, nil
+}
+
+func (s *Service) DeleteUser(ctx context.Context, userId int64) error {
+	return s.Repo.DeleteUser(ctx, userId)
+}
+
+func (s *Service) ChangeBlockUser(ctx context.Context, userId int64) error {
+	return s.Repo.ChangeBlockUser(ctx, userId)
+}

@@ -67,6 +67,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, ctxApp config.CtxApp) 
 		return
 	}
 
+	if selectedUser.Blocked {
+		customerrors.HandleJsonErrors(w, errors.New("пользователь заблокирован"), http.StatusBadRequest, op)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

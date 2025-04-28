@@ -133,6 +133,54 @@ func InitRoutes(db *sql.DB) *http.Server {
 		},
 	})
 
+	newRoutes.Handle(Route{
+		Address: "/admin/users",
+		Method:  http.MethodGet,
+		Handler: admin.UsersHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+			&middlewares.RoleMiddleware{
+				RoleName: config.Admin,
+			},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/admin/{id}",
+		Method:  http.MethodDelete,
+		Handler: admin.DeleteUserHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+			&middlewares.RoleMiddleware{
+				RoleName: config.Admin,
+			},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/admin/{id}/block",
+		Method:  http.MethodPut,
+		Handler: admin.BlockUserHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+			&middlewares.RoleMiddleware{
+				RoleName: config.Admin,
+			},
+		},
+	})
+
+	newRoutes.Handle(Route{
+		Address: "/admin/logs",
+		Method:  http.MethodGet,
+		Handler: admin.LogsHandler,
+		Middlewares: []middlewares.BaseMiddleware{
+			&middlewares.Auth{},
+			&middlewares.RoleMiddleware{
+				RoleName: config.Admin,
+			},
+		},
+	})
+
 	return &http.Server{
 		Addr:         ":8080",
 		Handler:      newRoutes,
@@ -164,11 +212,4 @@ func matchPattern(pattern, path string) (map[string]string, bool) {
 	}
 
 	return params, true
-}
-
-func Param(r *http.Request, key string) string {
-	if params, ok := r.Context().Value("params").(map[string]string); ok {
-		return params[key]
-	}
-	return ""
 }
